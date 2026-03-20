@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sincronicidad • NJ</title>
+    <style>
+        :root {
+            --gold: #d4af37;
+            --bg-deep: #030303;
+            --phone-border: #1a1a1a;
+        }
+
+        /* Centrado del simulador en la computadora/web */
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            background: #e0e0e0; /* Fondo gris claro afuera del celular */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Georgia', serif;
+            overflow: hidden;
+        }
+
+        /* EL CUERPO DEL CELULAR (Mockup) */
+        .iphone-frame {
+            width: 360px; 
+            height: 740px;
+            background: var(--phone-border);
+            border-radius: 50px;
+            padding: 12px;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.5);
+            position: relative;
+            border: 4px solid #333;
+        }
+
+        /* La muesca (Notch) superior */
+        .notch {
+            position: absolute;
+            top: 12px; left: 50%;
+            transform: translateX(-50%);
+            width: 150px; height: 30px;
+            background: var(--phone-border);
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            z-index: 100;
+        }
+
+        /* LA PANTALLA (Donde ocurre todo) */
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: var(--bg-deep);
+            border-radius: 40px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 60px 20px 40px 20px;
+            box-sizing: border-box;
+        }
+
+        #canvas-nebula {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%; z-index: 1;
+        }
+
+        /* ELEMENTOS INTERNOS */
+        #message-display {
+            width: 100%;
+            min-height: 180px;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            font-style: italic;
+            color: #f0f0f0;
+            text-shadow: 0 0 10px #000;
+            transition: opacity 0.5s;
+            opacity: 0;
+        }
+
+        #touch-zone {
+            width: 140px; height: 140px;
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            background: rgba(212, 175, 55, 0.08);
+            backdrop-filter: blur(5px);
+            z-index: 20;
+            position: relative;
+            transition: 0.4s;
+            cursor: pointer;
+        }
+
+        .pulse-ring {
+            position: absolute; width: 100%; height: 100%;
+            border: 2px solid var(--gold); border-radius: 50%;
+            animation: pulse 3s infinite;
+        }
+
+        .instruction {
+            z-index: 10;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            color: var(--gold);
+            opacity: 0.7;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        /* PANTALLA FINAL */
+        #final-gate {
+            display: none;
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: radial-gradient(circle, #121212 0%, #000 100%);
+            flex-direction: column; justify-content: center; align-items: center;
+            z-index: 150; padding: 30px; text-align: center;
+            border-radius: 40px;
+        }
+
+        .btn-wa {
+            margin-top: 25px; padding: 15px 30px; border: 1px solid var(--gold);
+            color: var(--gold); text-decoration: none;
+            border-radius: 4px; font-weight: bold;
+            font-size: 0.8rem; letter-spacing: 2px;
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.9); opacity: 0.8; }
+            100% { transform: scale(1.6); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<audio id="track" loop><source src="an.mp3" type="audio/mpeg"></audio>
+
+<div class="iphone-frame">
+    <div class="notch"></div>
+    
+    <div class="screen" id="main-content">
+        <canvas id="canvas-nebula"></canvas>
+
+        <div id="message-display"></div>
+
+        <div id="touch-zone">
+            <div class="pulse-ring"></div>
+            <span style="color: var(--gold); font-size: 0.6rem; font-weight: bold; text-align: center; letter-spacing: 1px;">SENTIR EL FINAL</span>
+        </div>
+
+        <div class="instruction" id="instr">Mantén presionado para escuchar mi voz en letras</div>
+
+        <div id="final-gate">
+            <h2 style="color: var(--gold); letter-spacing: 3px; font-size: 0.9rem;">GRACIAS POR EXISTIR</h2>
+            <p style="font-size: 1rem; color: #ccc;">"Diga gracias universo por todo lo que me das..."</p>
+            <p style="margin-top: 15px; font-style: italic; color: var(--gold); font-size: 0.85rem;">El día termina, pero los buenos actos no.</p>
+            <a href="https://wa.me/51927191084?text=El%20día%20termina,%20pero%20los%20buenos%20actos%20no.%20Gracias%20por%20todo%20Nelvin...%20❤️" class="btn-wa">VUELVO A TI</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    const msg = [
+        "Espero que este día te haya alegrado...",
+        "Que mis detalles te hayan gustado tal como lo planeé.",
+        "Hice todo lo que está a mi alcance con estas manos.",
+        "Las manos que un día tocaron tu cabello...",
+        "Todo esto lo hice porque te aprecio mucho.",
+        "Y porque siento mucho más que eso por ti.",
+        "Me alegra que hoy lo hayas pasado espectacular con tus papitos.",
+        "Espero de corazón que ellos estén llenos de salud.",
+        "Que Dios te bendiga a ti y a tu familia siempre.",
+        "Prométeme que siempre serás esa buena persona.",
+        "Mira cómo el sol se asoma y cómo el día se acaba...",
+        "Como la flor se marchita, somos pasajeros aquí.",
+        "¿Qué nos llevamos al final del camino?",
+        "Nada. Los rencores se quedan atrás.",
+        "Haber hecho el bien siempre existirá.",
+        "Si algún día alguien amado ya no está...",
+        "Estarás satisfecha de haber sabido valorar.",
+        "Valora a tus padres hoy, ahora.",
+        "Valora a las personas que amas con el alma.",
+        "Respira y dile al universo: Gracias por todo lo que me das.",
+        "El día termina, Jasmin, pero lo que sentimos permanece.",
+        "Eres luz en este mundo pasajero.",
+        "Nunca dejes de brillar.",
+        "Feliz cumpleaños, mi Aries favorita."
+    ];
+
+    let current = 0;
+    let timer = null;
+    const audio = document.getElementById('track');
+    const touchZone = document.getElementById('touch-zone');
+    const display = document.getElementById('message-display');
+
+    function showNext() {
+        if(current < msg.length) {
+            display.style.opacity = '0';
+            setTimeout(() => {
+                display.innerHTML = msg[current];
+                display.style.opacity = '1';
+                current++;
+            }, 300);
+        } else {
+            clearInterval(timer);
+            document.getElementById('final-gate').style.display = 'flex';
+        }
+    }
+
+    const start = (e) => {
+        if(e) e.preventDefault();
+        audio.play().catch(()=>{});
+        document.getElementById('instr').style.opacity = '0';
+        if(!timer) {
+            timer = setInterval(showNext, 3800);
+            showNext();
+        }
+        touchZone.style.transform = 'scale(0.9)';
+    };
+
+    const stop = () => {
+        clearInterval(timer);
+        timer = null;
+        display.style.opacity = '0';
+        document.getElementById('instr').style.opacity = '0.7';
+        touchZone.style.transform = 'scale(1)';
+    };
+
+    touchZone.addEventListener('touchstart', start);
+    touchZone.addEventListener('touchend', stop);
+    touchZone.addEventListener('mousedown', start);
+    touchZone.addEventListener('mouseup', stop);
+
+    // Partículas solo dentro del canvas del celular
+    const canvas = document.getElementById('canvas-nebula');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 336; // Ancho interno del mockup
+    canvas.height = 716; // Alto interno del mockup
+
+    let particles = [];
+    for(let i=0; i<30; i++) {
+        particles.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.2, vy: (Math.random()-0.5)*0.2, r: Math.random()*1.2});
+    }
+
+    function draw() {
+        ctx.fillStyle = 'rgba(3,3,3,0.2)';
+        ctx.fillRect(0,0,canvas.width, canvas.height);
+        ctx.fillStyle = 'rgba(212,175,55,0.3)';
+        particles.forEach(p => {
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
+            p.x += p.vx; p.y += p.vy;
+            if(p.x<0 || p.x>canvas.width) p.vx*=-1;
+            if(p.y<0 || p.y>canvas.height) p.vy*=-1;
+        });
+        requestAnimationFrame(draw);
+    }
+    draw();
+</script>
+</body>
+</html>
