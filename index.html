@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sincronicidad • NJ</title>
+    <style>
+        :root {
+            --gold: #d4af37;
+            --bg: #030303;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background: var(--bg); color: #fff;
+            font-family: 'Georgia', serif;
+            overflow: hidden; touch-action: none;
+        }
+
+        #canvas-nebula {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; z-index: 1;
+        }
+
+        .overlay {
+            position: relative; z-index: 10;
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+        }
+
+        #touch-zone {
+            width: 160px; height: 160px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; transition: 0.5s;
+            background: rgba(212, 175, 55, 0.05);
+            backdrop-filter: blur(8px);
+            z-index: 30;
+        }
+
+        .pulse-ring {
+            position: absolute; width: 100%; height: 100%;
+            border: 1px solid var(--gold); border-radius: 50%;
+            animation: pulse 3s infinite;
+        }
+
+        #message-display {
+            position: absolute; top: 15%; width: 85%;
+            text-align: center; font-size: 1.15rem;
+            line-height: 1.8; letter-spacing: 0.5px;
+            text-shadow: 0 0 15px rgba(0,0,0,1);
+            pointer-events: none; transition: opacity 0.6s;
+            font-style: italic;
+            color: #f0f0f0;
+        }
+
+        /* CORRECCIÓN DE ALINEACIÓN CENTRAL */
+        .instruction {
+            position: absolute; 
+            bottom: 10%;
+            left: 0;
+            width: 100%; /* Ocupa todo el ancho */
+            text-align: center; /* Centra el texto */
+            font-size: 0.7rem; 
+            letter-spacing: 2px;
+            color: var(--gold); 
+            opacity: 0.7;
+            text-transform: uppercase;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+
+        #final-gate {
+            display: none; 
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: radial-gradient(circle, #121212 0%, #000 100%);
+            flex-direction: column; justify-content: center; align-items: center;
+            z-index: 100; animation: fadeIn 2.5s forwards;
+            padding: 40px; box-sizing: border-box; text-align: center;
+        }
+
+        .btn-wa {
+            margin-top: 30px; padding: 18px 35px; border: 1px solid var(--gold);
+            color: var(--gold); text-decoration: none;
+            border-radius: 4px; font-weight: bold;
+            letter-spacing: 3px; transition: 0.4s;
+            font-size: 0.8rem;
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.9); opacity: 0.8; }
+            100% { transform: scale(1.6); opacity: 0; }
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    </style>
+</head>
+<body>
+
+<audio id="track" loop><source src="an.mp3" type="audio/mpeg"></audio>
+<canvas id="canvas-nebula"></canvas>
+
+<div class="overlay" id="main-view">
+    <div id="message-display"></div>
+    
+    <div id="touch-zone">
+        <div class="pulse-ring"></div>
+        <span id="center-text" style="color: var(--gold); font-size: 0.65rem; letter-spacing: 2px; text-align: center; padding: 10px;">SENTIR EL FINAL DEL DÍA</span>
+    </div>
+
+    <div class="instruction" id="instr">Mantén presionado para escuchar mi voz en letras</div>
+</div>
+
+<div id="final-gate">
+    <h2 style="color: var(--gold); letter-spacing: 5px; font-size: 0.9rem; margin-bottom: 20px;">GRACIAS POR EXISTIR</h2>
+    <p style="font-size: 1.1rem; line-height: 1.6; color: #ccc;">"Diga gracias universo por todo lo que me das..."</p>
+    <p style="margin-top: 20px; font-style: italic; color: var(--gold); font-size: 1rem; letter-spacing: 1px;">El día termina, pero los buenos actos no.</p>
+    <a href="https://wa.me/51927191084?text=El%20día%20termina,%20pero%20los%20buenos%20actos%20no.%20Gracias%20por%20todo%20Nelvin,%20lo%20valoré%20mucho.%20Vuelvo%20a%20ti...%20❤️" class="btn-wa">VUELVO A TI</a>
+</div>
+
+<script>
+    const msg = [
+        "Espero que este día te haya alegrado...",
+        "Que cada uno de mis detalles te hayan gustado tal como lo planeé.",
+        "Hice todo lo que está a mi alcance, lo que sé hacer con estas manos.",
+        "Las manos que un día tocaron tu cabello...",
+        "Todo esto lo hice porque te aprecio mucho.",
+        "Y no solo por eso... es porque siento mucho más que eso por ti.",
+        "Me alegra que hoy lo hayas pasado espectacular con tus papitos.",
+        "Espero de corazón que ellos estén llenos de salud.",
+        "Que Dios te bendiga a ti y a tu familia en cada paso.",
+        "Prométeme que siempre serás esa buena persona que conocí.",
+        "Mira cómo el sol se asoma y cómo el día se acaba...",
+        "Como la flor se marchita, así nosotros somos pasajeros en esta tierra.",
+        "¿Y qué nos llevamos de aquí al final del camino?",
+        "Nada. Los rencores y las molestias se quedan atrás.",
+        "Pero ten algo siempre en cuenta...",
+        "Haber valorado y haber hecho el bien siempre existirá a donde vayas.",
+        "Si algún día alguien amado ya no está...",
+        "Estarás satisfecha de haber sabido valorar cada segundo.",
+        "Por eso, valora a tus padres hoy, ahora.",
+        "Valora a las personas que amas con toda tu alma.",
+        "Valora las plantas, los animales y todo lo que existe.",
+        "Respira profundo en este silencio...",
+        "Y dile al universo: Gracias por todo lo que me das.",
+        "Gracias por este año más de vida.",
+        "Gracias por los momentos que nos conectan.",
+        "El día termina, Jasmin, pero lo que sentimos permanece.",
+        "Eres un ser de luz en este mundo pasajero.",
+        "Nunca dejes de brillar, ni de agradecer.",
+        "Aquí estaré yo, valorando el privilegio de conocerte.",
+        "Feliz cumpleaños, mi Aries favorita."
+    ];
+
+    let current = 0;
+    let timer = null;
+    const audio = document.getElementById('track');
+    const touchZone = document.getElementById('touch-zone');
+    const display = document.getElementById('message-display');
+    const instr = document.getElementById('instr');
+
+    function showNext() {
+        if(current < msg.length) {
+            display.style.opacity = '0';
+            setTimeout(() => {
+                display.innerHTML = msg[current];
+                display.style.opacity = '1';
+                current++;
+            }, 400);
+        } else {
+            clearInterval(timer);
+            setTimeout(() => {
+                document.getElementById('final-gate').style.display = 'flex';
+                document.getElementById('main-view').style.display = 'none';
+            }, 1500);
+        }
+    }
+
+    const start = (e) => {
+        if(e) e.preventDefault();
+        audio.play().catch(e => {});
+        instr.style.opacity = '0';
+        if(!timer) {
+            timer = setInterval(showNext, 3800);
+            showNext();
+        }
+        touchZone.style.transform = 'scale(0.85)';
+        touchZone.style.boxShadow = '0 0 30px var(--gold)';
+    };
+
+    const stop = () => {
+        clearInterval(timer);
+        timer = null;
+        display.style.opacity = '0';
+        instr.style.opacity = '0.7';
+        touchZone.style.transform = 'scale(1)';
+        touchZone.style.boxShadow = 'none';
+    };
+
+    touchZone.addEventListener('mousedown', start);
+    touchZone.addEventListener('mouseup', stop);
+    touchZone.addEventListener('touchstart', start);
+    touchZone.addEventListener('touchend', stop);
+
+    const canvas = document.getElementById('canvas-nebula');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let particles = [];
+    for(let i=0; i<40; i++) {
+        particles.push({
+            x: Math.random()*canvas.width,
+            y: Math.random()*canvas.height,
+            vx: (Math.random()-0.5)*0.3,
+            vy: (Math.random()-0.5)*0.3,
+            r: Math.random()*1.5
+        });
+    }
+
+    function draw() {
+        ctx.fillStyle = 'rgba(3,3,3,0.15)';
+        ctx.fillRect(0,0,canvas.width, canvas.height);
+        ctx.fillStyle = 'rgba(212,175,55,0.25)';
+        particles.forEach(p => {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+            ctx.fill();
+            p.x += p.vx; p.y += p.vy;
+            if(p.x<0 || p.x>canvas.width) p.vx*=-1;
+            if(p.y<0 || p.y>canvas.height) p.vy*=-1;
+        });
+        requestAnimationFrame(draw);
+    }
+    draw();
+</script>
+</body>
+</html>
